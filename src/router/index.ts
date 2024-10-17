@@ -1,18 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-// Create and configure the router
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
       name: 'home',
-      component: () => import('../views/HomeView.vue'), // Home view component
+      component: () => import('../views/HomeView.vue'),
     },
     {
-      path: '/countries/:name-:countryCode', // Dynamic path for country routes
+      path: '/countries/:name-:countryCode',
       name: 'country',
-      component: () => import('../views/CountryView.vue'), // Direct reference to the view file
+      component: () => import('../views/countries/[name].vue'),
     },
   ],
 })

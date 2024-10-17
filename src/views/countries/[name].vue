@@ -2,7 +2,9 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
-import HolidayListCard from '@/components/HolidayListCard.vue'
+
+import HolidayCard from '@/components/HolidayCard.vue' // Using '@' to reference src directly
+
 import Btn from '@/components/Btn.vue'
 
 // Define a type for a holiday
@@ -26,18 +28,17 @@ const holidays = ref<Holiday[]>([])
 
 // Route parameters
 const route = useRoute()
-const countryName = (route.params.name as string) || 'Unknown Country'
-const countryCode = (route.params.countryCode as string) || ''
+const countryName = route.params.name as string
+const countryCode = route.params.countryCode as string
 
 // Function to fetch holidays based on the selected year and country code
 const fetchHolidays = async (year: number) => {
-  if (!countryCode) {
-    console.error('Country code is undefined')
-    return
-  }
-
   try {
-    const url = `https://date.nager.at/api/v3/PublicHolidays/${year}/${countryCode}`
+    if (!countryCode) {
+      throw new Error('Country code is undefined')
+    }
+    const url =
+      'https://date.nager.at/api/v3/PublicHolidays/${year}/${countryCode}'
     console.log(`Fetching holidays for ${year} from URL: ${url}`)
     const { data } = await axios.get<Holiday[]>(url)
     holidays.value = data
@@ -51,7 +52,7 @@ onMounted(() => {
   fetchHolidays(selectedYear.value)
 })
 
-// Method to handle year switch when a button is clicked
+// Method to handle year switch
 const switchYear = (year: number) => {
   selectedYear.value = year
   fetchHolidays(year) // Fetch holidays for the selected year
@@ -62,22 +63,26 @@ const switchYear = (year: number) => {
   <main>
     <div class="container w-full h-full py-20 flex flex-col gap-10">
       <!-- Heading -->
-      <div class="flex items-center gap-5">
+      <header class="flex items-center gap-5">
         <h1 class="text-2xl">{{ countryName }}</h1>
-        <div class="w-1 h-1 bg-black"></div>
+        <div class="w-1 h-1 bg-black rounded-full"></div>
         <h2 class="text-2xl">Country Code: {{ countryCode }}</h2>
-      </div>
+      </header>
 
       <!-- Holidays List -->
-      <h2 class="text-2xl">Holidays for {{ selectedYear }}</h2>
-      <div class="flex flex-col h-[60vh] overflow-auto gap-5">
-        <ul v-for="holiday in holidays" :key="holiday.date">
-          <HolidayListCard :holiday="holiday" />
-        </ul>
-      </div>
+      <section class="flex flex-col gap-5">
+        <h2 class="text-2xl">Holidays for {{ selectedYear }}</h2>
+        <div class="flex flex-col h-[60vh] overflow-auto gap-5">
+          <ul class="flex flex-col gap-5">
+            <li v-for="(holiday, index) in holidays" :key="index">
+              <HolidayCard :holiday="holiday" />
+            </li>
+          </ul>
+        </div>
+      </section>
 
       <!-- Year Buttons (Pagination for 2020-2030) -->
-      <div class="flex gap-5 items-center">
+      <nav class="grid grid-cols-4 gap-5 md:flex md:gap-5 md:items-center">
         <div v-for="year in years.year" :key="year">
           <Btn
             :year="year"
@@ -85,7 +90,7 @@ const switchYear = (year: number) => {
             @switchYear="switchYear"
           />
         </div>
-      </div>
+      </nav>
     </div>
   </main>
 </template>
