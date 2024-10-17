@@ -26,15 +26,17 @@ const holidays = ref<Holiday[]>([])
 
 // Route parameters
 const route = useRoute()
-const countryName = route.params.name as string
-const countryCode = route.params.countryCode as string
+const countryName = (route.params.name as string) || 'Unknown Country'
+const countryCode = (route.params.countryCode as string) || ''
 
 // Function to fetch holidays based on the selected year and country code
 const fetchHolidays = async (year: number) => {
+  if (!countryCode) {
+    console.error('Country code is undefined')
+    return
+  }
+
   try {
-    if (!countryCode) {
-      throw new Error('Country code is undefined')
-    }
     const url = `https://date.nager.at/api/v3/PublicHolidays/${year}/${countryCode}`
     console.log(`Fetching holidays for ${year} from URL: ${url}`)
     const { data } = await axios.get<Holiday[]>(url)
@@ -69,7 +71,7 @@ const switchYear = (year: number) => {
       <!-- Holidays List -->
       <h2 class="text-2xl">Holidays for {{ selectedYear }}</h2>
       <div class="flex flex-col h-[60vh] overflow-auto gap-5">
-        <ul v-for="(holiday, index) in holidays" :key="index">
+        <ul v-for="holiday in holidays" :key="holiday.date">
           <HolidayListCard :holiday="holiday" />
         </ul>
       </div>
