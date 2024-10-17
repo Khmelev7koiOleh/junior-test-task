@@ -9,9 +9,9 @@ const router = createRouter({
       component: () => import('../views/HomeView.vue'),
     },
     {
-      path: '/countries/:name-:countryCode',
+      path: '/countries/:CountryView-:countryCode',
       name: 'country',
-      component: () => import('../views/countries/[name].vue'),
+      component: () => import('../views/countries/CountryView.vue'),
     },
   ],
 })

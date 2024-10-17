@@ -2,9 +2,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
-
-import HolidayCard from '@/components/HolidayCard.vue' // Using '@' to reference src directly
-
+import HolidayCard from '@/components/HolidayCard.vue'
 import Btn from '@/components/Btn.vue'
 
 // Define a type for a holiday
@@ -25,11 +23,19 @@ const years = reactive({
 
 const selectedYear = ref(currentYear) // Default to the current year
 const holidays = ref<Holiday[]>([])
+const loading = ref(false)
+const errorMessage = ref('')
 
 // Route parameters
 const route = useRoute()
-const countryName = route.params.name as string
-const countryCode = route.params.countryCode as string
+
+// Safely extract route parameters
+const countryName = route.params.CountryView || 'Unknown Country'
+const countryCode = route.params.countryCode || 'Unknown Code'
+
+// Log values for debugging
+console.log('Country Name:', countryName)
+console.log('Country Code:', countryCode)
 
 // Function to fetch holidays based on the selected year and country code
 const fetchHolidays = async (year: number) => {
@@ -37,13 +43,22 @@ const fetchHolidays = async (year: number) => {
     if (!countryCode) {
       throw new Error('Country code is undefined')
     }
-    const url =
-      'https://date.nager.at/api/v3/PublicHolidays/${year}/${countryCode}'
-    console.log(`Fetching holidays for ${year} from URL: ${url}`)
+    loading.value = true
+    errorMessage.value = '' // Reset error message
+    const url = `https://date.nager.at/api/v3/PublicHolidays/${year}/${countryCode}`
+    console.log(`Fetching from URL: ${url}`)
+
     const { data } = await axios.get<Holiday[]>(url)
+
+    // Log the fetched holidays for debugging
+    console.log('Fetched Holidays:', data)
+
     holidays.value = data
   } catch (error) {
+    errorMessage.value = 'Failed to fetch holidays. Please try again later.'
     console.error('Error fetching holidays:', error)
+  } finally {
+    loading.value = false
   }
 }
 
@@ -54,8 +69,10 @@ onMounted(() => {
 
 // Method to handle year switch
 const switchYear = (year: number) => {
-  selectedYear.value = year
-  fetchHolidays(year) // Fetch holidays for the selected year
+  if (selectedYear.value !== year) {
+    selectedYear.value = year
+    fetchHolidays(year) // Fetch holidays for the selected year
+  }
 }
 </script>
 
@@ -72,12 +89,32 @@ const switchYear = (year: number) => {
       <!-- Holidays List -->
       <section class="flex flex-col gap-5">
         <h2 class="text-2xl">Holidays for {{ selectedYear }}</h2>
-        <div class="flex flex-col h-[60vh] overflow-auto gap-5">
+
+        <!-- Show a loading indicator if fetching data -->
+        <div v-if="loading" class="text-center">
+          <p>Loading holidays...</p>
+        </div>
+
+        <!-- Conditionally Render Holidays List or an Error Message -->
+        <div
+          v-else-if="holidays.length"
+          class="flex flex-col h-[60vh] overflow-auto gap-5"
+        >
           <ul class="flex flex-col gap-5">
             <li v-for="(holiday, index) in holidays" :key="index">
               <HolidayCard :holiday="holiday" />
             </li>
           </ul>
+        </div>
+
+        <!-- Error message if fetching holidays fails -->
+        <div v-else-if="errorMessage">
+          <p class="text-red-600">{{ errorMessage }}</p>
+        </div>
+
+        <!-- No holidays message -->
+        <div v-else>
+          <p>No holidays available for this year.</p>
         </div>
       </section>
 

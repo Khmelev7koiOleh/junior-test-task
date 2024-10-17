@@ -17,7 +17,7 @@ const switchYear = () => {
   <button
     @click="switchYear"
     :class="{ 'text-white bg-blue-500': props.year === props.selectedYear }"
-    class="p-2 bg-slate-50 border rounded border-black"
+    class="p-2 border rounded border-black"
   >
     {{ props.year }}
   </button>
