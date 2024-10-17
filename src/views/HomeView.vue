@@ -67,7 +67,7 @@ onMounted(async () => {
           </div>
         </div>
         <div class="w-full h-full">
-          <h1 class="text-2xl">Random Countries Widget</h1>
+          <h1 class="text-2xl">Random Countries Widget 1111</h1>
           <div class="w-full h-full border border-[2-px] border-black"></div>
         </div>
       </div>
